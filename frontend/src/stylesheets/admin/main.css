@@ -1,0 +1,50 @@
+body {
+    padding: 80px;
+    background: #e6e6e6;
+    font: 14px cursive, "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+    color: #00B7FF;
+}
+
+.top-h1 {
+    font-size:70px;
+    color: #4cae4c;;
+    font-family: cursive;
+}
+
+.config-h1 {
+    font-family: cursive;
+    border-bottom: solid;
+    padding-bottom: 10px;
+    margin-bottom: 40px;
+}
+
+.config-h2 {
+    font-family: cursive;
+}
+
+.config-title {
+    font-family: cursive;
+}
+
+.config-div {
+    background: #fff;
+    padding: 50px;
+}
+
+.say {
+    border-bottom: 1px dashed;
+}
+
+.block-inline {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    display: block;
+    width: 100%;
+}
+
+.shadow{
+    box-shadow: 5px 5px 60px #d0cece;
+}

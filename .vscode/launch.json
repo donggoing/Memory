@@ -1,0 +1,13 @@
+{
+    "configurations": [
+    {
+        "type": "node",
+        "request": "launch",
+        "name": "Launch Program",
+        "program": "${workspaceFolder}/backend/bin/www",
+        "skipFiles": [
+            "<node_internals>/**"
+        ]
+    }
+    ]
+}
