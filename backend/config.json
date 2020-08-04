@@ -2,5 +2,9 @@
     "username":"",
     "password":"",
     "remote":"http://localhost:3000",
-    "session_secret":""
+    "session_secret":"",
+    "accessKey":"",
+    "secretKey":"",
+    "bucket":"",
+    "privateBucketDomain":""
 }

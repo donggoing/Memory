@@ -17,6 +17,7 @@
     "jsonwebtoken": "^8.5.1",
     "morgan": "~1.9.0",
     "multiparty": "^4.2.1",
+    "qiniu": "^7.3.2",
     "uuid": "^8.3.0"
   }
 }

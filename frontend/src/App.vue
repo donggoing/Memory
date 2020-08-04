@@ -2,6 +2,7 @@
   <div id="app">
     <vheader></vheader>
     <router-view />
+    <vue-progress-bar></vue-progress-bar>
   </div>
 </template>
 

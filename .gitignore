@@ -1,6 +1,9 @@
 node_modules
 .git
 session-store.db
-dist/
+/dist/
 sftp.json
 love-record/
+backend/config.json
+backend/public/record.json
+.vscode

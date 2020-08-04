@@ -79,6 +79,7 @@ function append(newImage){
 		records['total']++;
 		records['images_index'].push(records['current']-1);
 		records['images_name'].push(newImage['name']);
+		records['images_originName'].push(newImage['originName']);
 		records['images_words'].push(newImage['words']);
 		records['images_time'].push(new Date().toLocaleDateString());
 		console.log(`current:${records['current']}, total:${records['total']}`);
@@ -90,6 +91,7 @@ function append(newImage){
 function check(records){
 	if(!records['images_index']) records['images_index'] = [];
 	if(!records['images_time']) records['images_time'] = [];
+	if(!records['images_originName']) records['images_originName'] = [];
 	if(!records['images_name']) records['images_name'] =  [];
 	if(!records['images_words']) records['images_words'] = [];
 	records['current'] = records['current'] ? records['current'] : 0;

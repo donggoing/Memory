@@ -7,15 +7,14 @@ var file = require('../method/file');
 var jwt = require('jsonwebtoken');
 var path = require('path');
 var sha256 = require('../method/sha256.compress');
-
-var secret = "yd_love_ll";
+var myqiniu = require('../method/_qiniu');
+var config = require('../config.json');
 var router = express.Router();
 
 /* 登录验证，登录成功返回true */
 router.post('',async function (req, res) {
     var name = req.body.username;
     var password = req.body.password;
-    var config = require('../config.json')
     if (name == sha256(config["username"]) && password == sha256(config["password"] )) {
         req.session.logined = true;
         // let tokenStr = await jwt.sign({"username":name},secret,{expiresIn: "1d"})
@@ -30,7 +29,12 @@ router.post('',async function (req, res) {
     }
 });
 
-
+router.get('/qiniutoken', function (req, res){
+    if(!(config.accessKey&&config.secretKey&&config.bucket)){
+        res.status(500).json({success:false});
+    }
+    return res.status(200).json({success:true,token:myqiniu.getUploadToken()});
+})
 
 
 module.exports = router;

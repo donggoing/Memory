@@ -30,6 +30,7 @@
 <script>
 
 const countTime = require('../javascripts/count-time');
+
 import('../javascripts/jquery.backstretch.min');
 
 export default {
@@ -62,18 +63,18 @@ export default {
     // };
 
     this.$http.get('/love-record/imgs_name').then((data) => {
-      //console.log(data);
+      // console.log(data);
       this.imgs_url = data.data;
-      //let result = data.data.map((img)=>{
+      // let result = data.data.map((img)=>{
       //  return {
       //    url:`${this.image_prefix}/${img}`,
       //    scale:'fit'
       //    };
-      //});
-      
-      //console.log(result)
-      //$('#LoveContainer').backstretch(result, {
-          fade: 1000
+      // });
+
+      // console.log(result)
+      // $('#LoveContainer').backstretch(result, {
+      // 1000;
       // });
     });
 
@@ -84,20 +85,20 @@ export default {
       this.imgs_words = data.data;
       data = data.data;
       let index = 0;
-      $('#LoveContainer').css('background-image', `url(${this.image_prefix}/${this.imgs_url[(index) % data.length]})`);
+      $('#LoveContainer').css('background-image', `url(${this.imgs_url[(index) % data.length]})`);
       $('#say').text(data[(index++) % data.length]);
-      //let randomtime=(Math.random()*6+8)*1000;;
+      // let randomtime=(Math.random()*6+8)*1000;;
       this.timer = setInterval(() => {
-        $('#LoveContainer').animate({opacity:"1"},1000);
-        $('#LoveContainer').animate({opacity:"0"},9000);  
-        $('#LoveContainer').css('background-image', `url(${this.image_prefix}/${this.imgs_url[(index) % data.length]})`);
-        //$('#LoveContainer').animate({opacity:"0"},6000);
-        //$('#LoveContainer').backstretch('next');
+        $('#LoveContainer').animate({ opacity: '1' }, 1000);
+        $('#LoveContainer').animate({ opacity: '0' }, 9000);
+        $('#LoveContainer').css('background-image', `url(${this.imgs_url[(index) % data.length]})`);
+        // $('#LoveContainer').animate({opacity:"0"},6000);
+        // $('#LoveContainer').backstretch('next');
         $('#say').hide();
         $('#say').text(data[(index++) % data.length]);
         $('#say').fadeToggle();
         $('#carousel').carousel('next');
-        //randomtime = (Math.random()*6+8)*1000;
+        // randomtime = (Math.random()*6+8)*1000;
       }, 10000);
     });
   },

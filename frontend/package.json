@@ -16,9 +16,11 @@
     "element-ui": "^2.13.2",
     "jquery": "^3.5.1",
     "popper.js": "^1.16.1",
+    "qiniu-js": "^3.1.1",
     "sass-loader": "^9.0.2",
     "scss-loader": "^0.0.1",
     "vue": "^2.5.2",
+    "vue-progressbar": "^0.7.5",
     "vue-router": "^3.0.1",
     "vuex": "^3.5.1"
   },
