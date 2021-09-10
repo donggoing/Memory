@@ -1,0 +1,4 @@
+{
+    "server":"http://127.0.0.1:3000(后端地址)",
+    "qiniuDomain": "七牛云的域名如：https://upload-z2.qiniup.com(华南区)"
+}

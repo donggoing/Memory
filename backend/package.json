@@ -17,7 +17,11 @@
     "jsonwebtoken": "^8.5.1",
     "morgan": "~1.9.0",
     "multiparty": "^4.2.1",
+    "mysql2": "^2.2.5",
     "qiniu": "^7.3.2",
+    "save": "^2.4.0",
+    "sequelize": "^6.5.0",
+    "urlencode": "^1.1.0",
     "uuid": "^8.3.0"
   }
 }

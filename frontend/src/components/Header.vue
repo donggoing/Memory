@@ -1,11 +1,5 @@
 <template>
     <div class="header"  @mouseover='hd_style.opacity=0.7' @mouseout='hd_style.opacity=0' :style='hd_style'>
-        <!-- 折叠按钮 -->
-        <!-- <div class="collapse-btn" @click="collapseChage">
-            <i v-if="!collapse" class="el-icon-s-fold"></i>
-            <i v-else class="el-icon-s-unfold"></i>
-        </div> -->
-        <!-- <div class="logo"> Memory Of Love</div> -->
         <div class="header-right">
             <div class="header-user-con">
                 <!-- <div class="btn-album" @click="$router.push('/Album')">
@@ -13,6 +7,12 @@
                         <i class="el-icon-menu"></i>
                     </el-tooltip>
                 </div> -->
+                <router-link :to="{path:'/Diary'}" class="btn-diary">
+                  <el-tooltip effect="dark" :content="`爱的日志`" placement="bottom">
+                        <!-- <i class="el-icon-rank"></i> -->
+                    <i class="el-icon-document"></i>
+                  </el-tooltip>
+                </router-link>
                 <router-link :to="{path:'/'}" class="btn-love">
                   <el-tooltip effect="dark" :content="`Love`" placement="bottom">
                         <!-- <i class="el-icon-rank"></i> -->
@@ -170,7 +170,7 @@ el-tooltip{
     font-size: 25px;
 }
 
-.btn-love,.btn-newimg,.btn-album{
+.btn-diary,.btn-love,.btn-newimg,.btn-album{
   margin-right: 10px;
 }
 
@@ -178,6 +178,7 @@ el-tooltip{
 .btn-love:hover {TEXT-DECORATION: underline}
 .btn-love:link {TEXT-DECORATION: none}
 
+.btn-diary,
 .btn-love,
 .btn-newimg,
 .btn-album,

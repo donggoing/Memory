@@ -18,21 +18,21 @@
             <!-- </div> -->
             <!-- <h2 class="config-h2">Add Item</h2> -->
             <!-- <form> -->
-              <el-input id="say" type="text" v-model="description" name="say" placeholder="Record Our Memory"
+              <el-input id="newWord" type="text" v-model="description" placeholder="Record Our Memory"
               class="input"  ></el-input>
               <!-- <el-input type="file" name="inputFile"  accept="image/*" placeholder="upload img" v-on:change="onFileChange"
               class="input"  ></el-input> -->
               <el-upload
                   class="upload-demo"
                   ref="upload"
+                  multiple
                   :on-change="addFile"
                   :file-list="fileList"
                   :action="`localhost`"
                   name="Content"
-                  :limit="1"
                   :auto-upload="false">
-
-                <el-button slot="trigger" type="success"  style="margin-top:10px;">加载记忆</el-button>
+                  <!-- :limit="1" -->
+                <el-button slot="trigger" type="success"  style="margin-top:10px;">加载记忆（可多选哦~）</el-button>
               </el-upload>
               <el-button type="success" @click="uploadImgToQiniu"  style="margin-top:10px;">上传记忆</el-button>
             <!-- </form> -->
@@ -44,19 +44,19 @@
 
 <script>
 import * as qiniu from 'qiniu-js';
+import config from '../../server.json';
+
+import('../stylesheets/file.css');
 
 export default {
   name: 'NewImg',
   data() {
     return {
       description: null,
-      uploadFile: null,
-      qiniutoken: null,
-      domain: 'https://upload-z2.qiniup.com', // 七牛云的上传地址（华南区）
-      qiniuaddr: 'http://xxxx.com', // 七牛云的图片外链地址
-      // uploadPicUrl: '', // 提交到后台图片地址
+      qiniutoken: null, // 从后端拿
+      domain: config.qiniuDomain, // 七牛云的上传地址（华南区）
       imgLoadPercent: 0,
-      fileList: null,
+      fileList: [],
 
     };
   },
@@ -79,13 +79,14 @@ export default {
       );
     },
     addFile(file, filelist) {
-      this.uploadFile = filelist[0];
+      this.fileList = filelist;
+      // this.uploadFile = filelist[0];
     },
-    onFileChange(e) {
-      const files = e.target.files || e.dataTransfer.files;
-      if (!files.length) { return; }
-      this.uploadFile = files[0];
-    },
+    // onFileChange(e) {
+    //   const files = e.target.files || e.dataTransfer.files;
+    //   if (!files.length) { return; }
+    //   this.uploadFile = files[0];
+    // },
     // submit() {
     //   const requestConfig = {
     //     headers: {
@@ -117,7 +118,7 @@ export default {
       // const axiosInstance = axios.create({ withCredentials: false }); // withCredentials 禁止携带cookie，带cookie在七牛上有可能出现跨域问题
       // const data = new FormData();
       // data.append('token', this.qiniutoken); // 七牛需要的token，叫后台给，是七牛账号密码等组成的hash
-      // data.append('file', this.uploadFilefile);
+      // data.append('file', this.uploadFile);
       // this.$http({
       //   method: 'POST',
       //   url: this.domain, // 上传地址
@@ -141,41 +142,48 @@ export default {
 
       const config = {
         useCdnDomain: true, // 表示是否使用 cdn 加速域名，为布尔值，true 表示使用，默认为 false。
-        region: qiniu.region.z2, // 根据具体提示修改上传地区,当为 null 或 undefined 时，自动分析上传域名区域
+        region: null, // 根据具体提示修改上传地区,当为 null 或 undefined 时，自动分析上传域名区域
       };
 
-      const putExtra = {
-        fname: this.uploadFile.name, // 文件原文件名
-        params: {}, // 用来放置自定义变量
-        mimeType: null, // 用来限制上传文件类型，为 null 时表示不对文件类型限制；限制类型放到数组里： ["image/png", "image/jpeg", "image/gif"]
-      };
-      const observable = qiniu.upload(this.uploadFile, null, this.qiniutoken, putExtra, config);
-      this.$Progress.start();
-      observable.subscribe({
-        next: (result) => {
-          // 主要用来展示进度
-          console.log(result);
-          this.$Progress.set(result.total.percent);
-        },
-        error: (errResult) => {
-          // 失败报错信息
-          console.log(errResult);
-        },
-        complete: (result) => {
-          // 接收成功后返回的信息
-          this.$http.post('/love-record/img', { ...result, originName: this.uploadFile.name, description: this.description }).then(
-            (data) => {
-              data = data.data;
-              this.$Progress.finish();
-              this.$message('上传成功');
-            }, (err) => {
-              this.$message('上传失败');
-              this.$Progress.fail();
-              console.log(err);
-            });
-          // console.log(result);
-        },
-      });
+      const curFileList = this.fileList.slice();
+      // const observables = Array(curFileList.length);
+      for (let i = 0; i < curFileList.length; i++) {
+        // const uploadFile = curFileList[i];
+        const putExtra = {
+          fname: curFileList[i].name, // 文件原文件名
+          params: {}, // 用来放置自定义变量
+          mimeType: null, // 用来限制上传文件类型，为 null 时表示不对文件类型限制；限制类型放到数组里： ["image/png", "image/jpeg", "image/gif"]
+        };
+        const observables = qiniu.upload(curFileList[i].raw, null, this.qiniutoken, putExtra, config);
+        this.$Progress.start();
+        observables.subscribe({
+          next: (result) => {
+            // 主要用来展示进度
+            console.log(result);
+            this.$Progress.set(result.total.percent);
+          },
+          error: (errResult) => {
+            // 失败报错信息
+            console.log(errResult);
+          },
+          complete: (result) => {
+            // 接收成功后返回的信息
+            this.$http.post('/love-record/img', { ...result, originName: curFileList[i].name, description: this.description }).then(
+              (data) => {
+                data = data.data;
+                this.$Progress.finish();
+                this.$message(`${curFileList[i].name}上传成功`);
+                this.fileList.shift();
+              }, (err) => {
+                this.$message({ message: `${curFileList[i].name}上传失败`, type: 'error' });
+                this.$Progress.fail();
+                this.fileList.push(this.fileList.shift());
+                console.log(err);
+              });
+            // console.log(result);
+          },
+        });
+      }
     },
   },
 };
@@ -237,7 +245,7 @@ a {
     padding: 50px;
 }
 
-.say {
+#newWord {
     border-bottom: 1px dashed;
 }
 

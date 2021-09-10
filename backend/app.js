@@ -1,23 +1,29 @@
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
+var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 // const jwt = require('jsonwebtoken');
 var session = require('express-session');
-var LokiStore = require('connect-loki')(session); 
 var indexRouter = require('./routes/index');
 var adminRouter = require('./routes/admin');
 var recordRouter = require('./routes/love-record');
+var diaryRouter = require('./routes/diary');
 const config = require('./config.json');
 var history = require('connect-history-api-fallback');
 
 var app = express();
 app.use(session({
+  name: 'us',
+  cookie:{
+    // 使用HTTPS可设为true
+    // secure: true,
+    maxAge:30*24*60*60000
+  },
   secret: config.session_secret,
   resave: false,
-  saveUninitialized: false,
-  store: new LokiStore()
+  saveUninitialized: true,
 }));
 app.use(history());
 app.use(function(req, res, next) {
@@ -34,24 +40,32 @@ app.use(function(req, res, next) {
   
     // next();
     if (req.method.toLowerCase() == 'options') {
-      res.send(200);  // 让options尝试请求快速结束
+      res.sendStatus(200);  // 让options尝试请求快速结束
     } else {
       next();
     }
 })
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
 
-app.use(logger('dev'));
+// 日志格式
+logger.token('localDate',function getDate(req) {
+  let targetTimezone = -8
+  let _dif = new Date().getTimezoneOffset()
+  let east8time = new Date().getTime() + _dif * 60 * 1000 - (targetTimezone * 60 * 60 * 1000)
+  return new Date(east8time).toLocaleString()
+})
+logger.format('combined', '[:localDate] :remote-addr - :remote-user  :status ":referrer" ":user-agent"');
+app.use(logger('combined'));
+
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+// 静态文件存储文件夹，如果不是前后端分离的话，需要把前端build生成的文件拷贝到public下
 app.use(express.static(path.join(__dirname, 'public')));
 
 
-
 app.use('/admin', adminRouter);
+// 登录
 app.use(async function(req, res, next){
   // if (req.method==="OPTIONS")
   //   return res.send()
@@ -64,10 +78,13 @@ app.use(async function(req, res, next){
   catch (err) {
     return res.status(403).json({ "msg": "请登录",outOfDate:true })
   }
+  req.session.cookie.maxAge = 30*24*60*60000;
   next();
 })
 app.use('/love-record',recordRouter);
+app.use('/diary',diaryRouter);
 app.use('/', indexRouter);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -82,7 +99,7 @@ app.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.render('error');
+  // res.render('error');
 });
 
 function getToken(headers) {

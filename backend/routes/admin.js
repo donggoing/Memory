@@ -12,18 +12,18 @@ var config = require('../config.json');
 var router = express.Router();
 
 /* 登录验证，登录成功返回true */
-router.post('',async function (req, res) {
+router.post('/',function (req, res) {
     var name = req.body.username;
     var password = req.body.password;
     if (name == sha256(config["username"]) && password == sha256(config["password"] )) {
         req.session.logined = true;
         // let tokenStr = await jwt.sign({"username":name},secret,{expiresIn: "1d"})
-        res.json({
+        return res.json({
             success: true
             // token: tokenStr
         });
     } else {
-        res.json({
+        return res.json({
             success: false
         });
     }

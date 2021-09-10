@@ -1,10 +1,9 @@
 {
-    "username":"",
-    "password":"",
-    "remote":"http://localhost:3000",
-    "session_secret":"",
-    "accessKey":"",
-    "secretKey":"",
-    "bucket":"",
-    "privateBucketDomain":""
+    "username":"前端登录的用户名",
+    "password":"前端登录的密码",
+    "session_secret":"随便输入一些字符就行",
+    "accessKey":"七牛云图片存储的accessKey",
+    "secretKey":"七牛云图片存储的secretKey",
+    "bucket":"七牛云图片存储的空间名",
+    "BucketDomain":"七牛云图片存储的域名"
 }

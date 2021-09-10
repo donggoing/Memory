@@ -1,3 +1,4 @@
+// 现在没用了，文件管理时期，现在改成数据库了
 const fs = require("fs");
 const path = require('path');
 
@@ -57,7 +58,7 @@ function write(src, content) {
 
 function readPropertiesSync(src) {
 	var data = readSync(src);
-    var obj = new Object();
+  var obj = new Object();
 	data.split("\n").map(function (i) {
 		//跳过注释
 		if (i.indexOf("#") == -1) {

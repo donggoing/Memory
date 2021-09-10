@@ -32,6 +32,18 @@ module.exports = {
       ? config.build.assetsPublicPath
       : config.dev.assetsPublicPath,
   },
+  externals: {
+    // CDN
+    vue: 'Vue', // 左侧vue是我们自己引入时候要用的，右侧是开发依赖库的主人定义的不能修改
+    'vue-router': 'VueRouter',
+    axios: 'axios',
+    'element-ui': 'ELEMENT',
+    bootstrap: 'bootstrap',
+    moment:'moment',
+    "moment-duration-format":'momentDurationFormatSetup',
+    // jQuery: 'jquery',
+    jquery: 'window.$'
+  },
   resolve: {
     extensions: ['.js', '.vue', '.json'],
     alias: {
@@ -46,6 +58,9 @@ module.exports = {
       jquery: 'jquery',
       'window.jQuery': 'jquery',
     }),
+    new webpack.DefinePlugin({
+      '__DEV__': process.env.NODE_ENV === 'production' ? false : true
+  })
   ],
   module: {
     rules: [
@@ -62,7 +77,7 @@ module.exports = {
       },
       {
         test: /\.sass$/,
-        loaders: ['style', 'css', 'sass'],
+        loaders: ["css-loader!sass-loader","style-loader"],
       },
       {
         test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,

@@ -1,0 +1,3 @@
+#Container .shadow .upload-demo input[type=file]{
+  display:none !important;
+}

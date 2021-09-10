@@ -1,15 +1,48 @@
 import Vue from 'vue';
 import Router from 'vue-router';
-import Love from '@/components/Love';
-import Login from '@/components/Login';
-import Album from '@/components/Album';
-import NewImg from '@/components/NewImg';
+
+const Login = () => import('@/components/Login');
+const Album = () => import('@/components/Album');
+const NewImg = () => import('@/components/NewImg');
+const Love = () => import('@/components/Love');
+const Diary = () => import('@/components/Diary');
+const Detail = () => import('@/components/detail');
+const Edit = () => import('@/components/edit');
+// const Create = () => import('@/components/edit');
+const Category = () => import('@/components/category');
+
 
 Vue.use(Router);
 
 const router = new Router({
   mode: 'history',
   routes: [
+    {
+      path: '/category',
+      name: 'category',
+      component: Category,
+    },
+    {
+      path: '/create',
+      name: 'creatediary',
+      component: Edit,
+    },
+    {
+      path: '/edit',
+      name: 'diarydedit',
+      component: Edit,
+    },
+    {
+      path: '/detail',
+      name: 'diarydetail',
+      component: Detail,
+      props: true,
+    },
+    {
+      path: '/Diary',
+      name: 'Love',
+      component: Diary,
+    },
     {
       path: '/',
       name: 'Love',

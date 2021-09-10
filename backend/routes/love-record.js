@@ -1,7 +1,14 @@
 var express = require('express');
 var file = require('../method/file.js')
 var config = require('../config.json');
+var urlencode = require('urlencode');
 const { getDownloadUrl } = require('../method/_qiniu.js');
+const seq = require('../method/db')
+var initModels = require("../model/init-models");
+const {n1_cmt_img} = require('../model/associate')
+
+
+var models = initModels(seq);
 // var UUID = require('uuid');
 // var path = require('path');
 // var fs = require('fs');
@@ -9,57 +16,91 @@ const { getDownloadUrl } = require('../method/_qiniu.js');
 
 var router = express.Router();
 
-/* 获取所有语句 */
-router.get('/imgs_words', function (req, res) {
-    return file.read().then((records)=>{
-        res.json(records['images_words']);
-    },(err)=>{
-        return res.status(500).json({
-            success:false,
-            msg:err
-        })
-    })
+// router.use(async function(req, res, next){
+//     // if (req.method==="OPTIONS")
+//     //   return res.send()
+//     // let token = req.headers.token;
+//     next();
+//   })
+
+// 获取在一起的时间用于计时
+router.get('/start',function (req, res){
+    return res.json({start:'2021-09-10 00:00:00'});
 })
 
-/* 获取所有图片名 */
-router.get('/imgs_name', function (req, res) {
-    return file.read().then((records)=>{
-        // let prefix = '/images/love-record/'
-        res.json(records['images_name'].map(file=>getDownloadUrl(file)));
-    },(err)=>{
-        return res.status(500).json({
-            success:false,
-            msg:err
-        })
-    })
-});
+/* 获取所有图片链接和语句 */
+router.get('/imgs_desc', function (req, res) {
+    return models.images.findAll({
+            attributes: ['name','desc'],
+            where:{is_del:false,forDiary:false}
+          }).then(results=>{
+            return res.status(200).json(results.map((result)=>{
+                return {
+                    url: getDownloadUrl(urlencode(result.name)+"?imageView2/0/interlace/1/q/50|imageslim"),
+                    desc: result.desc
+                }
+            }))
+            },
+            (err)=>{
+                return res.status(500).json({
+                    success:false,
+                    msg:err
+                })
+            })
+})
 
+// /* 获取所有图片下载地址 */
+// router.get('/imgs_name', function (req, res) {
+//     return file.read().then((records)=>{
+//         // let prefix = '/images/love-record/'
+//         res.json(records['images_name'].map(file=>getDownloadUrl(urlencode(file))));
+//     },(err)=>{
+//         return res.status(500).json({
+//             success:false,
+//             msg:err
+//         })
+//     })
+// });
+
+// 获取所有部分图片链接
 router.get('/imgs',(req,res)=>{
     let group =  req.query.group ? parseInt(req.query.group) : 0;
     let groupSize = req.query.groupSize ? parseInt(req.query.groupSize) : 10;
-    let start = group*groupSize;
+    let justDel = req.query.justDel ? parseInt(req.query.justDel) : 0;
+    let start = group*groupSize-justDel;
     let end = start+groupSize; 
-    return file.read().then((records)=>{
-        if(start>=records.current){
+    return models.images.findAndCountAll({
+        order:[['id','DESC']],
+        offset:start,
+        limit: groupSize,
+        where:{is_del:false,forDiary:false},
+        include:[
+            {
+                association: n1_cmt_img,
+                required: false,
+                where:{
+                    "is_del":false
+                }
+            }
+        ]
+    }).then((records)=>{
+        if(start>=records.count){
             return res.json({
                 'final':true
             })
         }
-        // let prefix = '/images/love-record/'
-        let img_index = records["images_index"].slice(start,end);
-        let src =  records['images_name'].slice(start,end).map(file=>getDownloadUrl(file));
-        let info = records['images_words'].slice(start,end);
-        let time = records['images_time'].slice(start,end);
-        let result = src.map((value,index)=>{
+        let result = records.rows.map((record)=>{
+            src = getDownloadUrl(record.name+"?imageView2/0/interlace/1/q/50|imageslim") // 如果不需要压缩图片可以把后面加的那部分去掉
             return {
-                'index':img_index,
-                'src': value,
-                'href' : value,
-                'info' : info[index],
-                'uploadTime': time[index]
+                'index':record.id,
+                'src': src,
+                'href' : src,
+                'info' : record.desc,
+                'uploadTime': record.time,
+                'comments': record.comments
             }
         })
-        result['final'] = end >= records['current']-1
+        result['final'] = records.count - 1 <= end
         res.json(result);
     },(err)=>{
         return res.status(500).json({
@@ -69,6 +110,7 @@ router.get('/imgs',(req,res)=>{
     })
 })
 
+// 修改指定图片的描述
 router.patch('/img',(req,res)=>{
     const {img_index,description} = req.body;
     if(!img_index || !description){
@@ -77,44 +119,124 @@ router.patch('/img',(req,res)=>{
             msg:"Lack of index or description"
         })
     }
-    return file.update(img_index, description).then(
-        (result)=>{
-            return res.status(200).json({success:true})
+    return models.images.update(
+        {
+            desc: description
         },
-        (err)=>{
-            return res.status(400).json({
-                success:false,
-                msg:"Update failed"
-            })
-        }
-    )
+        {
+            'where':{
+                id:img_index
+            }
+        })
+        .then(
+            result=>{
+                    return res.status(200).json({success:true})
+            },
+            err=>{
+                return res.status(500).json({
+                    success:false,
+                    msg:"Update failed.\n"+err
+                })
+            }
+        )
 
 })
 
-/* Love Record */
-/* 上传*/
+// 提交对图片的评论（评论可以有多条，但是一张图片的描述只有一条）
+router.post('/comment',(req,res)=>{
+    const {img_index,detail} = req.body;
+    if(!img_index || !detail){
+       return res.status(400).json({
+            success:false,
+            msg:"Lack of index or detail"
+        })
+    }
+    return models.comments.create(
+        {
+            detail: detail,
+            img_id:img_index,
+            createDate:new Date()
+        })
+        .then(
+            result=>{
+                // result.createDate = new Date(new Date(result.createDate)+ 8 * 60 * 60 * 1000);
+                return res.status(200)
+                    .json({
+                        success:true,
+                        result:result
+                    })
+            },
+            err=>{
+                return res.status(500).json({
+                    success:false,
+                    msg:"Update failed.\n"+err
+                })
+            }
+        )
+
+})
+
+/* 
+上传图片
+key: 前端上传图片到七牛云后返回的key
+*/
 router.post('/img', function (req, res, next) {
     const data = req.body;
-     if(data.key&&data.hash){
+    if(data.key&&data.hash){
         newFileName = data.key;
-        file.append({'name':data.key,'words':data.description,'originName':data.originName}).then(
-            result=>{
+        return models.images.create({
+            name: data.key,
+            originName: data.originName,
+            desc: data.description
+        }).then(
+            succ=>{
                 return res.status(200).json({success:true});
             },
             err=>{
+                console.log(err)
                 return res.status(500).json({
                     success:false,
                     msg:err
                 })
             }
-        );
-     }
+        )
+    }
     else{
         return res.status(400).json({
             success:false,
             msg:err
         })
     }
+})
+
+// 删除指定图片
+router.post('/delImg',(req,res)=>{
+    const {img_index} = req.body;
+    if(!img_index){
+       return res.status(400).json({
+            success:false,
+            msg:"Lack of index"
+        })
+    }
+    return models.images.update({
+        is_del: true     
+        },{
+        'where':{
+            id:img_index
+        }
+        })
+        .then(
+            result=>{
+                    return res.status(200).json({success:true})
+            },
+            err=>{
+                return res.status(500).json({
+                    success:false,
+                    msg:"delete failed.\n"+err
+                })
+            }
+        )
+
 })
 
 
