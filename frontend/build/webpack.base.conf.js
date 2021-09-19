@@ -40,7 +40,7 @@ module.exports = {
     'element-ui': 'ELEMENT',
     bootstrap: 'bootstrap',
     moment:'moment',
-    "moment-duration-format":'momentDurationFormatSetup',
+    // "moment-duration-format":'momentDurationFormatSetup',
     // jQuery: 'jquery',
     jquery: 'window.$'
   },

@@ -101,8 +101,10 @@ export default {
     const self = this;
     setInterval(() => {
       // this.until = moment.tz(moment() - moment('2020-07-20 15:28'), 'Africa/Abidjan').format('DD天HH时mm分ss秒');
-      self.until = moment.duration(moment() - self.startTime, 'ms').format('DD/HH/mm/ss');
- 	  }, 1000);
+      // self.until = moment.duration(moment() - self.startTime, 'ms').format('DD/HH/mm/ss');
+      const dura = moment.duration(moment() - self.startTime, 'ms');
+      self.until = Math.floor(dura.asDays()) + moment.utc(dura.asMilliseconds()).format(':hh:mm:ss');
+    }, 1000);
     // const headers = {
     //   Authorization: localStorage.getItem('cx_secret_'),
     // };
